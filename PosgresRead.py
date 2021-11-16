@@ -14,22 +14,15 @@ def logging_row(row):
 
 def parse_jdbc_entry(table_data):
     for r in table_data:
-        logging.info("-->" + '-'.str(x) for x in r)
+        #logging.info("-->" + '-'.str(x) for x in r)
         yield [c.value if hasattr(c, 'value') else c for c in r]
 
-#class QueryPosgreSQLFn(beam.DoFn):
-#    def __enter__(self):
-#        return self
-#    def finalize(self):
-#        print('Finalizing the Class')
-
-#    def __exit__(self, exc_type, exc_val, exc_tb):
-#        self.finalize()
-
+        
 class QueryPostgreSQLFn(beam.DoFn):
     def parse_method(self, string_input):
 
-        logging.info("-->" + string_input)
+        
+        3logging.info("-->" + string_input)
 
         return string_input
 
@@ -44,10 +37,9 @@ def dbConnection():
 
             jclassname = "org.postgresql.Driver"
             url = ("jdbc:postgresql:"+database_db)
-            jars = ["/Users/cdamien/Downloads/postgresql-42.2.9.jar"]
+            jars = ["/Users/cdamien/Downloads/postgresql-42.2.9.jar"] #somewhere with the jar file
             libs = None
             cnx = jaydebeapi.connect(jclassname, url, {'user': database_user, 'password':database_password}, jars=jars,libs=libs)
-            #cnx = jaydebeapi.connect(jclassname,  url, jars=jars, libs=libs)
 
             try:
                 yield cnx
@@ -58,12 +50,11 @@ def run(argv=None):
 
     with  dbConnection() as cnx:
         cursor = cnx.cursor()
-        query = "SELECT *  FROM Person"
+        query = "SELECT *  FROM Persons"
         cursor.execute(query)
 
         options = PipelineOptions()
-       # options.view_as(StandardOptions).runner = 'DataflowRunner'
-
+        
         p = beam.Pipeline(options=options)
         (p
              | 'connecting to PostgreSQL' >> beam.Create(parse_jdbc_entry(cursor.fetchall()))
